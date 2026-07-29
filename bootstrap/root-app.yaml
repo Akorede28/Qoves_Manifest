@@ -1,0 +1,24 @@
+# Root Application (app-of-apps).
+#
+# This is the ONLY Application applied by hand (bootstrap). It points at the
+# apps/ directory; every child Application found there is created and managed
+# by ArgoCD from then on. All further changes to the cluster happen by
+# committing to this repo - never by kubectl apply/edit on workloads.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Akorede28/Qoves_Manifest.git
+    targetRevision: main
+    path: apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true      # deleting a child app file in git removes it from the cluster
+      selfHeal: true   # manual drift (kubectl edit) is reverted - git wins

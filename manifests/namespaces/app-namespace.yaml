@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app
+  labels:
+    # Stable label used as the selector target by NetworkPolicies (section D)
+    # and, later, by Prometheus scrape discovery.
+    app.kubernetes.io/part-of: qoves-takehome

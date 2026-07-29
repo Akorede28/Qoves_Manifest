@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: namespaces
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"   # namespaces exist before anything lands in them
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Akorede28/Qoves_Manifest.git
+    targetRevision: main
+    path: manifests/namespaces
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

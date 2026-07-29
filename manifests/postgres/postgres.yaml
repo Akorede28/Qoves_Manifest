@@ -1,0 +1,88 @@
+# PostgreSQL as a raw StatefulSet (ADR: raw vs CloudNativePG in docs/;
+# CNPG is planned as the stretch goal - this is the working baseline).
+#
+# Storage: volumeClaimTemplates gives each replica its own PVC. On minikube
+# the default StorageClass ("standard", hostPath provisioner) binds it as
+# ReadWriteOnce - scheduling/backup implications are covered in the writeup
+# (section F).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: app
+  labels:
+    app.kubernetes.io/name: postgres
+spec:
+  serviceName: postgres
+  replicas: 1   # single replica: Postgres HA needs an operator; see Production gaps
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgres
+    spec:
+      securityContext:
+        fsGroup: 999   # postgres group in the official image; makes the volume writable
+      containers:
+        - name: postgres
+          image: postgres:16.6-alpine   # pinned minor version, never :latest
+          ports:
+            - name: pg
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: app-db-credentials   # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata   # subdir so lost+found doesn't break initdb
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              # Memory limit = request avoids OOM surprises from burst;
+              # no CPU limit throttling debate here - kept modest for minikube.
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "app", "-d", "app"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "app", "-d", "app"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+# Headless service: stable DNS (postgres.app.svc.cluster.local) for the API's
+# connection string; headless because there is exactly one stateful backend -
+# no load-balancing semantics wanted.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: app
+  labels:
+    app.kubernetes.io/name: postgres
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: postgres
+  ports:
+    - name: pg
+      port: 5432
+      targetPort: pg
