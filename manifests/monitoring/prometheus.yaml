@@ -1,0 +1,161 @@
+# Section H - a minimal Prometheus, deliberately raw manifests instead of
+# kube-prometheus-stack: the brief asks for "a Prometheus you run" plus ONE
+# meaningful alert, and explicitly not a full dashboarding stack. 
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: monitoring
+---
+# Read-only discovery of pods so kubernetes_sd can find the API's /metrics.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [ "" ]
+  resources: [ pods, services, endpoints ]
+  verbs: [ get, list, watch ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    rule_files:
+      - /etc/prometheus/rules.yml
+
+    scrape_configs:
+      - job_name: api
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: [app]
+        relabel_configs:
+          # scrape only the API pods, on their declared container port
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            regex: api
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: "8080"
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+
+      - job_name: prometheus
+        static_configs:
+          - targets: [localhost:9090]
+
+  rules.yml: |
+    groups:
+      - name: api.rules
+        rules:
+          # THE one meaningful alert.
+          # Rationale (one line, as the brief asks): app_database_up == 0 means
+          # /healthz is returning 503 - users are being impacted RIGHT NOW and a
+          # human can act on it (check postgres-0, its PVC, recent syncs). It is
+          # a symptom alert, not a cause alert: it fires on user-visible failure
+          # rather than on noisy internals like CPU.
+          - alert: ApiDatabaseUnreachable
+            expr: max(app_database_up) == 0
+            for: 2m          # ride out pod restarts and probe blips
+            labels:
+              severity: page
+            annotations:
+              summary: API cannot reach PostgreSQL
+              description: >-
+                app_database_up has been 0 for 2 minutes; /healthz is serving
+                503 and the API is out of the ingress rotation.
+
+          # Safety net for the alert above: if no API target is scrapeable at
+          # all, app_database_up would be absent rather than 0.
+          - alert: ApiScrapeTargetsDown
+            expr: sum(up{job="api"}) == 0 or absent(up{job="api"})
+            for: 2m
+            labels:
+              severity: page
+            annotations:
+              summary: No API /metrics targets are reachable
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prometheus
+    spec:
+      serviceAccountName: prometheus
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.55.1 # pinned; LTS-line release
+        args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --storage.tsdb.retention.time=2d # scratch monitoring, not long-term storage
+        ports:
+        - name: http
+          containerPort: 9090
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus
+        - name: data
+          mountPath: /prometheus
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 300m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: http
+      volumes:
+      - name: config
+        configMap:
+          name: prometheus-config
+      - name: data
+        emptyDir: {} # ephemeral by design here; production gap: PVC or remote-write
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  selector:
+    app.kubernetes.io/name: prometheus
+  ports:
+  - name: http
+    port: 9090
+    targetPort: http

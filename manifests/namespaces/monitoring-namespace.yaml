@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    app.kubernetes.io/part-of: qoves-takehome
+    # matched by the api-ingress NetworkPolicy to allow /metrics scraping
+    kubernetes.io/metadata.name: monitoring

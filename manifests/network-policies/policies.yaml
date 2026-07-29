@@ -1,0 +1,110 @@
+# Section D - default-deny for BOTH ingress and egress in the app namespace,
+# then the minimal allow-list. Everything not listed here is blocked by Calico.
+#
+# Allowed paths:
+#   ingress-nginx -> api:8080        (serving traffic)
+#   monitoring    -> api:8080        (Prometheus scraping /metrics)
+#   api           -> postgres:5432   (SELECT 1 + app queries)
+#   all pods      -> kube-dns:53     (DNS egress - the easy-to-forget one)
+#
+# Deliberately absent:
+#   - postgres egress: a database initiates no outbound connections; if it
+#     ever tries, that is exactly the exfiltration this boundary exists for.
+#   - sealed-secrets controller access: it never talks to app pods; the
+#     API server materializes the Secret, so no policy is needed.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: app
+spec:
+  podSelector: {} # every pod in the namespace
+  policyTypes: [ Ingress, Egress ]
+  # no ingress/egress rules = nothing allowed
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: app
+spec:
+  podSelector: {} # DNS for all pods; without this, Service names stop resolving
+  policyTypes: [ Egress ]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-ingress
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  policyTypes: [ Ingress ]
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx # minikube ingress addon ns
+    ports:
+    - protocol: TCP
+      port: 8080
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring # Prometheus scrape
+    ports:
+    - protocol: TCP
+      port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-egress-to-postgres
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  policyTypes: [ Egress ]
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-ingress-from-api
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  policyTypes: [ Ingress ]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: api
+    ports:
+    - protocol: TCP
+      port: 5432

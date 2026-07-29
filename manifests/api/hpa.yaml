@@ -1,0 +1,28 @@
+# Section G - HorizontalPodAutoscaler on CPU (metrics-server addon).
+#
+# Honest assessment for the writeup: CPU is the WRONG primary signal for this
+# API. It is I/O-bound - requests spend their time waiting on Postgres, so
+# under DB slowness latency climbs while CPU stays flat and the HPA does
+# nothing (correctly: more replicas would not help a slow database, they
+# would just add connections to it). The right signal is requests-in-flight
+# or p95 latency from /metrics via prometheus-adapter or KEDA. CPU-based HPA
+# is deployed here as the required, defensible baseline.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+  namespace: app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 2       # keeps a rollout/node-drain from dropping to zero capacity
+  maxReplicas: 5       # bounded for minikube; requests (50m) x 5 stays trivial
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70   # of the 50m request - headroom before throttling at the 200m limit
