@@ -31,8 +31,8 @@ spec:
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: pg-app
-              key: uri
+              name: app-db-credentials
+              key: DATABASE_URL # arrives from the Secret at runtime, per the brief
         resources:
           requests:
             cpu: 50m
