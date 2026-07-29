@@ -1,0 +1,23 @@
+# Rename this file to postgres-restore.yaml (drop .disabled), commit, push to
+# run the restore drill. ArgoCD's directory source only applies *.yaml/*.json,
+# so with this extension the file is inert. Delete/rename back after verifying.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres-restore
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Akorede28/Qoves_Manifest.git
+    targetRevision: main
+    path: manifests/postgres-cnpg-restore
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

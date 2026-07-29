@@ -1,0 +1,112 @@
+# Local S3-compatible object storage for database backups.
+# Honest framing for the writeup: backups landing on a PVC inside the SAME
+# cluster protect against pod/data corruption, not cluster loss. Production
+# points barmanObjectStore at real off-cluster object storage - the config
+# change is one endpointURL.
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data
+  namespace: minio
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: minio
+  labels:
+    app.kubernetes.io/name: minio
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate      # RWO volume: never two pods fighting over it during rollout
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: minio
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minio
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio:RELEASE.2023-09-04T19-57-37Z   # pinned release
+          args: ["server", "/data", "--console-address", ":9001"]
+          envFrom:
+            - secretRef:
+                name: minio-root   # MINIO_ROOT_USER / MINIO_ROOT_PASSWORD - sealed, never in git
+          ports:
+            - name: s3
+              containerPort: 9000
+            - name: console
+              containerPort: 9001
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: s3
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: minio-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: minio
+spec:
+  selector:
+    app.kubernetes.io/name: minio
+  ports:
+    - name: s3
+      port: 9000
+      targetPort: s3
+    - name: console
+      port: 9001
+      targetPort: console
+---
+# One-shot bucket creation. barman-cloud writes into an existing bucket; it
+# does not create one. Retries until MinIO is ready, then mb --ignore-existing
+# makes it idempotent across re-syncs.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-make-bucket
+  namespace: minio
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mc
+          # Pin any real mc release; verify the tag exists on hub.docker.com/r/minio/mc/tags
+          image: minio/mc:RELEASE.2023-09-07T22-48-55Z
+          envFrom:
+            - secretRef:
+                name: minio-root
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until mc alias set local http://minio.minio.svc.cluster.local:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"; do
+                echo "waiting for minio..."; sleep 5;
+              done
+              mc mb --ignore-existing local/pg-backups
+              echo "bucket ready"

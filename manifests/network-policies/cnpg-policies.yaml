@@ -1,0 +1,99 @@
+# Additions for the CNPG cluster ("pg") under the existing default-deny.
+# CNPG instance pods carry the label cnpg.io/cluster: pg.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cnpg-pg-ingress
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: pg
+  policyTypes: [Ingress]
+  ingress:
+    # the API's SELECT 1 + queries
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: api
+      ports:
+        - protocol: TCP
+          port: 5432
+    # the operator manages instances via the instance manager's status port
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cnpg-system
+      ports:
+        - protocol: TCP
+          port: 8000
+    # primary <-> replica: streaming replication and instance coordination
+    - from:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: pg
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cnpg-pg-egress
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: pg
+  policyTypes: [Egress]
+  egress:
+    # WAL archiving + base backups to MinIO
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: minio
+      ports:
+        - protocol: TCP
+          port: 9000
+    # replica -> primary streaming
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: pg
+      ports:
+        - protocol: TCP
+          port: 5432
+    # The CNPG instance manager talks to the Kubernetes API server (status
+    # updates, config watches). The apiserver sits outside pod selectors
+    # (node IP on the docker driver), so this is allowed by port rather than
+    # destination - a conscious widening, scoped to ONLY the pg pods.
+    # Production fix: pin ipBlocks to the actual apiserver endpoints.
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8443
+---
+# The API must also be allowed to reach the CNPG service (its existing egress
+# rule targets the old postgres pods by label; pg pods have different labels).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-egress-to-cnpg
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: pg
+      ports:
+        - protocol: TCP
+          port: 5432

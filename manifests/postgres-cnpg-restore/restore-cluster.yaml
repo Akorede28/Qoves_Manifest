@@ -1,0 +1,40 @@
+# RESTORE DRILL - not referenced by any Application by default.
+# To run the drill: rename apps/postgres-restore.yaml.disabled ->
+# apps/postgres-restore.yaml, commit, push. ArgoCD creates this cluster
+# bootstrapped from the LATEST backup of "pg" in MinIO. Verify with:
+#   kubectl exec -n app pg-restore-1 -- psql -U postgres -d app \
+#     -c "SELECT * FROM persistence_test;"
+# Then delete the app file again (prune removes the restored cluster).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-restore
+  namespace: app
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.4
+  storage:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  bootstrap:
+    recovery:
+      source: pg-origin
+  externalClusters:
+    - name: pg-origin
+      barmanObjectStore:
+        destinationPath: s3://pg-backups/
+        endpointURL: http://minio.minio.svc.cluster.local:9000
+        serverName: pg   # read the backup set written by the live cluster
+        s3Credentials:
+          accessKeyId:
+            name: cnpg-minio-creds
+            key: ACCESS_KEY_ID
+          secretAccessKey:
+            name: cnpg-minio-creds
+            key: ACCESS_SECRET_KEY
