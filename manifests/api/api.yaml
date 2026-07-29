@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: api
 spec:
-  replicas: 2   # HPA (section G) will own this range later; 2 shows rollout behavior
+  replicas: 2 # HPA (section G) will own this range later; 2 shows rollout behavior
   selector:
     matchLabels:
       app.kubernetes.io/name: api
@@ -16,45 +16,47 @@ spec:
         app.kubernetes.io/name: api
     spec:
       securityContext:
-        runAsNonRoot: true   # belt-and-braces with the distroless :nonroot image
+        runAsNonRoot: true
+        runAsUser: 65532 # distroless "nonroot" - numeric so the kubelet can verify
+        runAsGroup: 65532
       containers:
-        - name: api
-          # Pinned by digest - immutable, survives tag mutation/deletion.
-          # Built by .github/workflows/build-image.yml from app/ at commit f3a229d.
-          image: ghcr.io/akorede28/qoves-api@sha256:65372d7798d5d1589d62635790f0b86aa1216b187b5769be511b28c169af0945
-          ports:
-            - name: http
-              containerPort: 8080
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: app-db-credentials
-                  key: DATABASE_URL   # arrives from the Secret at runtime, per the brief
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 128Mi
-          # Probe split (deliberate, walkthrough material):
-          # - readiness = /healthz (DB-dependent): pod leaves the Service when
-          #   the DB is unreachable, so the ingress stops sending it traffic.
-          # - liveness = / (DB-independent): a DB outage must NOT restart-loop
-          #   the API pods; restarting them cannot fix Postgres.
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: http
-            initialDelaySeconds: 3
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 10
+      - name: api
+        # Pinned by digest - immutable, survives tag mutation/deletion.
+        # Built by .github/workflows/build-image.yml from app/ at commit f3a229d.
+        image: ghcr.io/akorede28/qoves-api@sha256:65372d7798d5d1589d62635790f0b86aa1216b187b5769be511b28c169af0945
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-db-credentials
+              key: DATABASE_URL # arrives from the Secret at runtime, per the brief
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        # Probe split (deliberate, walkthrough material):
+        # - readiness = /healthz (DB-dependent): pod leaves the Service when
+        #   the DB is unreachable, so the ingress stops sending it traffic.
+        # - liveness = / (DB-independent): a DB outage must NOT restart-loop
+        #   the API pods; restarting them cannot fix Postgres.
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -67,9 +69,9 @@ spec:
   selector:
     app.kubernetes.io/name: api
   ports:
-    - name: http
-      port: 80
-      targetPort: http
+  - name: http
+    port: 80
+    targetPort: http
 ---
 # Exposed via the minikube ingress addon (ingress-nginx) - explicitly not
 # port-forward and not a LoadBalancer, per the brief.
@@ -81,13 +83,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: qoves.local
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: api
-                port:
-                  name: http
+  - host: qoves.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api
+            port:
+              name: http
