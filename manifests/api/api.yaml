@@ -17,11 +17,11 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 65532 # distroless "nonroot" - numeric so the kubelet can verify
+        runAsUser: 65532 # distroless "nonroot", numeric so the kubelet can verify
         runAsGroup: 65532
       containers:
       - name: api
-        # Pinned by digest - immutable, survives tag mutation/deletion.
+        # Pinned by digest, immutable, survives tag mutation/deletion.
         # Built by .github/workflows/build-image.yml from app/ at commit f3a229d.
         image: ghcr.io/akorede28/qoves-api@sha256:65372d7798d5d1589d62635790f0b86aa1216b187b5769be511b28c169af0945
         ports:
@@ -35,28 +35,35 @@ spec:
               key: DATABASE_URL # arrives from the Secret at runtime, per the brief
         resources:
           requests:
-            cpu: 50m
+            cpu: 100m
+              # was 50m; the probe timeouts below are a scheduling-share
+              # problem, and requests are what the scheduler honours
             memory: 64Mi
           limits:
-            cpu: 200m
             memory: 128Mi
-        # Probe split (deliberate, walkthrough material):
-        # - readiness = /healthz (DB-dependent): pod leaves the Service when
-        #   the DB is unreachable, so the ingress stops sending it traffic.
-        # - liveness = / (DB-independent): a DB outage must NOT restart-loop
-        #   the API pods; restarting them cannot fix Postgres.
+            cpu: 700m
+            # Probe split (deliberate, walkthrough material):
+            # - readiness = /healthz (DB-dependent): pod leaves the Service when
+            #   the DB is unreachable, so the ingress stops sending it traffic.
+            # - liveness = / (DB-independent): a DB outage must NOT restart-loop
+            #   the API pods; restarting them cannot fix Postgres.
         readinessProbe:
           httpGet:
             path: /healthz
             port: http
           initialDelaySeconds: 3
-          periodSeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+            # /healthz makes a DB round trip; the 1s default
+            # cannot cover it on a contended node
+          failureThreshold: 3
         livenessProbe:
           httpGet:
             path: /
             port: http
           initialDelaySeconds: 10
           periodSeconds: 10
+          timeoutSeconds: 3 # same trap as readiness, not yet sprung
 ---
 apiVersion: v1
 kind: Service
@@ -73,7 +80,7 @@ spec:
     port: 80
     targetPort: http
 ---
-# Exposed via the minikube ingress addon (ingress-nginx) - explicitly not
+# Exposed via the minikube ingress addon (ingress-nginx), explicitly not
 # port-forward and not a LoadBalancer, per the brief.
 apiVersion: networking.k8s.io/v1
 kind: Ingress

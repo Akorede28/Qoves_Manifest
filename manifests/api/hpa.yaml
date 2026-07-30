@@ -17,12 +17,12 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: api
-  minReplicas: 2       # keeps a rollout/node-drain from dropping to zero capacity
-  maxReplicas: 5       # bounded for minikube; requests (50m) x 5 stays trivial
+  minReplicas: 2 # keeps a rollout/node-drain from dropping to zero capacity
+  maxReplicas: 5 # bounded for minikube
   metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70   # of the 50m request - headroom before throttling at the 200m limit
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

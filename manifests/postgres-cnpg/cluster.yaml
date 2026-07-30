@@ -1,4 +1,4 @@
-# CloudNativePG cluster - replaces the raw StatefulSet after cutover.
+# CloudNativePG cluster, replaces the raw StatefulSet after cutover.
 # What the operator buys over the StatefulSet (ADR-3 addendum material):
 # replication + automated failover (2 instances here), declarative backups
 # with WAL archiving to object storage, and bootstrap-from-backup restore.
@@ -9,19 +9,19 @@ metadata:
   name: pg
   namespace: app
 spec:
-  instances: 2   # primary + one streaming replica; failover is automatic
-  imageName: ghcr.io/cloudnative-pg/postgresql:16.4   # pinned, matches operator line
+  instances: 2 # primary + one streaming replica; failover is automatic
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.4 # pinned, matches operator line
 
   bootstrap:
     initdb:
       database: app
       owner: app
       # CNPG generates the app user's credentials itself in Secret "pg-app",
-      # which includes a ready-made "uri" key - the API's DATABASE_URL after
+      # which includes a ready-made "uri" key, the API's DATABASE_URL after
       # cutover. One fewer hand-managed credential.
 
   storage:
-    size: 1Gi   # per instance, via the default StorageClass
+    size: 1Gi # per instance, via the default StorageClass
 
   resources:
     requests:
@@ -38,7 +38,7 @@ spec:
       endpointURL: http://minio.minio.svc.cluster.local:9000
       s3Credentials:
         accessKeyId:
-          name: cnpg-minio-creds     # sealed; same values as MinIO root for this demo
+          name: cnpg-minio-creds # sealed; same values as MinIO root for this demo
           key: ACCESS_KEY_ID
         secretAccessKey:
           name: cnpg-minio-creds
@@ -54,7 +54,7 @@ metadata:
   name: pg-daily
   namespace: app
 spec:
-  schedule: "0 0 2 * * *"   # CNPG uses 6-field cron (with seconds)
+  schedule: "0 0 2 * * *" # CNPG uses 6-field cron (with seconds)
   immediate: true
   backupOwnerReference: self
   cluster:
