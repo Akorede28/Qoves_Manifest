@@ -45,23 +45,27 @@ spec:
             cpu: 100m
             memory: 256Mi
           limits:
-            # Memory limit = request avoids OOM surprises from burst;
-            # no CPU limit throttling debate here - kept modest for minikube.
-            cpu: 500m
             memory: 256Mi
+              # equal to request: OOM on this pod is a data-integrity
+              # event, so burst is not worth the surprise
+            cpu: 700m
+              # 7x the request: headroom for checkpoints and vacuum
+              # without letting one pod monopolise a 2-vCPU node.
+              # Throttling here is why the probes needed 10s.
         readinessProbe:
           exec:
             command: [ "pg_isready", "-U", "app", "-d", "app" ]
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 5 # default 1s; exec fork+connect exceeds it on a loaded node
-        livenessProbe:
-          exec:
-            command: [ "pg_isready", "-U", "app", "-d", "app" ]
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 6 # ~60s of sustained failure before the kubelet kills a stateful pod
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 10 # default 1s; exec fork+connect exceeds it on a loaded node
+          failureThreshold: 3
+        # No livenessProbe, by design. Every restart this pod has recorded was a
+        # kubelet liveness kill of a healthy database (graceful exit 0) while the
+        # node was CPU-starved. Restarting Postgres is not a remediation for any
+        # realistic hang, and on a single replica it is a guaranteed outage.
+        # Readiness alone gates traffic, which is the part that matters.
+        # Considered: tcpSocket:5432 liveness, cheaper for the kubelet, but it
+        # passes while Postgres is in recovery and not actually serving.
   volumeClaimTemplates:
   - metadata:
       name: data
