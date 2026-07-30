@@ -46,7 +46,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2
 kubectl -n argocd wait --for=condition=Available deployment/argocd-server --timeout=300s
 ```
 
-UI access (optional; port-forward is fine for the *ArgoCD UI* - the ban on
+UI access (optional; port-forward is fine for the _ArgoCD UI_ - the ban on
 port-forward is about serving the app, which goes through the ingress):
 
 ```powershell
@@ -61,6 +61,8 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ```powershell
 kubectl apply -f bootstrap/root-app.yaml
 ```
+
+Deleting the root app now cascades through every child. Use kubectl delete -f bootstrap/root-app.yaml --cascade=orphan if you ever need to re-bootstrap without tearing down state.
 
 From here on, ArgoCD reconciles the cluster to match the apps/ directory of
 this repo. All changes = git commit + push.

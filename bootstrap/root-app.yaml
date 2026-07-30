@@ -9,6 +9,8 @@ kind: Application
 metadata:
   name: root
   namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
@@ -20,5 +22,5 @@ spec:
     namespace: argocd
   syncPolicy:
     automated:
-      prune: true      # deleting a child app file in git removes it from the cluster
-      selfHeal: true   # manual drift (kubectl edit) is reverted - git wins
+      prune: true # deleting a child app file in git removes it from the cluster
+      selfHeal: true # manual drift (kubectl edit) is reverted - git wins

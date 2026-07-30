@@ -3,8 +3,10 @@ kind: Application
 metadata:
   name: namespaces
   namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "0"   # namespaces exist before anything lands in them
+    argocd.argoproj.io/sync-wave: "0" # namespaces exist before anything lands in them
 spec:
   project: default
   source:
