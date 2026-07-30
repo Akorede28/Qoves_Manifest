@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "__name__": "app_database_up",
+          "instance": "10.244.205.214:8080",
+          "job": "api",
+          "pod": "api-59d798f4cb-9rkrw"
+        },
+        "value": [1785421388.157, "1"]
+      },
+      {
+        "metric": {
+          "__name__": "app_database_up",
+          "instance": "10.244.120.90:8080",
+          "job": "api",
+          "pod": "api-59d798f4cb-625sr"
+        },
+        "value": [1785421388.157, "1"]
+      }
+    ]
+  }
+}
