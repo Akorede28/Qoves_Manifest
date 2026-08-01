@@ -1,0 +1,30 @@
+### ArgoCD Applications, all reconciled by the root app from apps/
+NAME               PATH                         SYNC     HEALTH
+api                manifests/api                Synced   Healthy
+monitoring         manifests/monitoring         Synced   Healthy
+namespaces         manifests/namespaces         Synced   Healthy
+network-policies   manifests/network-policies   Synced   Healthy
+postgres           manifests/postgres           Synced   Healthy
+root               apps                         Synced   Healthy
+sealed-secrets     <none>                       Synced   Healthy
+secrets            manifests/secrets            Synced   Healthy
+
+### Resources owned by the root Application (the app-of-apps tree)
+Application/api  Synced
+Application/monitoring  Synced
+Application/namespaces  Synced
+Application/network-policies  Synced
+Application/postgres  Synced
+Application/sealed-secrets  Synced
+Application/secrets  Synced
+
+### Finalizers, prune deletes managed resources instead of orphaning them
+NAME               FINALIZERS
+api                [resources-finalizer.argocd.argoproj.io]
+monitoring         [resources-finalizer.argocd.argoproj.io]
+namespaces         [resources-finalizer.argocd.argoproj.io]
+network-policies   [resources-finalizer.argocd.argoproj.io]
+postgres           [resources-finalizer.argocd.argoproj.io]
+root               [resources-finalizer.argocd.argoproj.io]
+sealed-secrets     [resources-finalizer.argocd.argoproj.io]
+secrets            [resources-finalizer.argocd.argoproj.io]

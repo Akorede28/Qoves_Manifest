@@ -1,6 +1,4 @@
-# Rename this file to postgres-restore.yaml (drop .disabled), commit, push to
-# run the restore drill. ArgoCD's directory source only applies *.yaml/*.json,
-# so with this extension the file is inert. Delete/rename back after verifying.
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

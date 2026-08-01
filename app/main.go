@@ -1,7 +1,6 @@
 // Stand-in implementation of the QOVES take-home API contract.
 //
-// Per QOVES HR (Jul 29): there is no separate starter repo; the app lives in
-// app/ of your own repository. The brief describes the app's contract; this
+// The brief describes the app's contract; this
 // file implements it exactly: GET / (hello), GET /healthz (SELECT 1 → 200/503),
 // GET /metrics (Prometheus), connection string from DATABASE_URL only.
 package main

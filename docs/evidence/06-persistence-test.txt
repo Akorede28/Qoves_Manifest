@@ -1,0 +1,26 @@
+### Write a row, then destroy the pod
+INSERT 0 1
+ id |               note               
+----+----------------------------------
+  1 | written before probe-fix rollout
+  2 | written before pod delete
+(2 rows)
+
+
+### Delete postgres-0; the StatefulSet recreates it and the PVC re-binds
+pod "postgres-0" deleted from app namespace
+pod/postgres-0 condition met
+
+### New pod, same data
+NAME         READY   STATUS    RESTARTS   AGE   IP               NODE           NOMINATED NODE   READINESS GATES
+postgres-0   1/1     Running   0          20s   10.244.205.222   minikube-m02   <none>           <none>
+ id |               note               
+----+----------------------------------
+  1 | written before probe-fix rollout
+  2 | written before pod delete
+(2 rows)
+
+
+### Same PV as before the delete
+NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-postgres-0   Bound    pvc-ab3afb10-d8b8-4493-b4d9-6e63f606bbbb   1Gi        RWO            standard       <unset>                 29h

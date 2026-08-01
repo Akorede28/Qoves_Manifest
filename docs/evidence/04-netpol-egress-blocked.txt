@@ -1,0 +1,12 @@
+### netpol-test: in namespace app, NOT labelled app.kubernetes.io/name=api
+### Under default-deny egress, no external destination is reachable.
+
+$ wget -T 5 -O- http://example.com
+Connecting to example.com (172.66.147.243:80)
+wget: download timed out
+exit=1
+
+$ wget -T 5 -O- http://1.1.1.1     # raw IP: isolates the network layer from DNS
+Connecting to 1.1.1.1 (1.1.1.1:80)
+wget: download timed out
+exit=1

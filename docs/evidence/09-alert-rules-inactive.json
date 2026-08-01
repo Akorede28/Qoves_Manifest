@@ -1,0 +1,58 @@
+{
+    "status":  "success",
+    "data":  {
+                 "groups":  [
+                                {
+                                    "name":  "api.rules",
+                                    "file":  "/etc/prometheus/rules.yml",
+                                    "rules":  [
+                                                  {
+                                                      "state":  "inactive",
+                                                      "name":  "ApiDatabaseUnreachable",
+                                                      "query":  "max(app_database_up) == 0",
+                                                      "duration":  120,
+                                                      "keepFiringFor":  0,
+                                                      "labels":  {
+                                                                     "severity":  "page"
+                                                                 },
+                                                      "annotations":  {
+                                                                          "description":  "app_database_up has been 0 for 2 minutes; /healthz is serving 503 and the API is out of the ingress rotation.",
+                                                                          "summary":  "API cannot reach PostgreSQL"
+                                                                      },
+                                                      "alerts":  [
+
+                                                                 ],
+                                                      "health":  "ok",
+                                                      "evaluationTime":  0.00072907,
+                                                      "lastEvaluation":  "2026-07-30T20:49:08.009328041Z",
+                                                      "type":  "alerting"
+                                                  },
+                                                  {
+                                                      "state":  "inactive",
+                                                      "name":  "ApiScrapeTargetsDown",
+                                                      "query":  "sum(up{job=\"api\"}) == 0 or absent(up{job=\"api\"})",
+                                                      "duration":  120,
+                                                      "keepFiringFor":  0,
+                                                      "labels":  {
+                                                                     "severity":  "page"
+                                                                 },
+                                                      "annotations":  {
+                                                                          "summary":  "No API /metrics targets are reachable"
+                                                                      },
+                                                      "alerts":  [
+
+                                                                 ],
+                                                      "health":  "ok",
+                                                      "evaluationTime":  0.000440903,
+                                                      "lastEvaluation":  "2026-07-30T20:49:08.010067482Z",
+                                                      "type":  "alerting"
+                                                  }
+                                              ],
+                                    "interval":  15,
+                                    "limit":  0,
+                                    "evaluationTime":  0.001233855,
+                                    "lastEvaluation":  "2026-07-30T20:49:08.009282056Z"
+                                }
+                            ]
+             }
+}

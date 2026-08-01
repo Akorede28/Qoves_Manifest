@@ -1,0 +1,17 @@
+### DNS resolves under default-deny (allow-dns-egress permits it)
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+
+Name:	postgres.app.svc.cluster.local
+Address: 10.244.205.221
+
+
+### But a non-api pod cannot open 5432 (postgres-ingress-from-api allows only the API)
+$ nc -w 5 postgres 5432
+exit=1
+
+### Positive control: the API IS allowed, and reaches Postgres on every
+### readiness probe; see 03-healthz-200-via-ingress.txt (200 via the ingress).
+### The API image is distroless, so there is no shell to exec into; /healthz
+### returning 200 is the proof that the allowed path works.

@@ -1,73 +1,74 @@
-NAMESPACE       NAME                                                    READY   STATUS      RESTARTS       AGE
-app             pod/api-59d798f4cb-625sr                                1/1     Running     10 (61m ago)   20h
-app             pod/api-59d798f4cb-9rkrw                                1/1     Running     6 (82m ago)    20h
-app             pod/postgres-0                                          1/1     Running     5 (82m ago)    3h24m
-argocd          pod/argocd-application-controller-0                     1/1     Running     3 (82m ago)    23h
-argocd          pod/argocd-applicationset-controller-748685565c-7trkb   1/1     Running     1 (82m ago)    23h
-argocd          pod/argocd-dex-server-7ffb4b5c88-k7fn6                  1/1     Running     1 (82m ago)    23h
-argocd          pod/argocd-notifications-controller-7757fdd8c6-hf5r8    1/1     Running     3 (82m ago)    23h
-argocd          pod/argocd-redis-556cbb7bc9-bc9dx                       1/1     Running     1 (82m ago)    23h
-argocd          pod/argocd-repo-server-6c8f5f9bd4-4zlsc                 1/1     Running     7 (82m ago)    23h
-argocd          pod/argocd-server-86c48f6bf-k7zwl                       1/1     Running     28 (82m ago)   23h
-cnpg-system     pod/cnpg-cloudnative-pg-689d5774c4-kdhch                1/1     Running     34             16h
-ingress-nginx   pod/ingress-nginx-admission-create-94sl9                0/1     Completed   0              23h
-ingress-nginx   pod/ingress-nginx-admission-patch-twhvs                 0/1     Completed   0              23h
-ingress-nginx   pod/ingress-nginx-controller-9cc49f96f-kk66k            1/1     Running     52 (61m ago)   23h
-kube-system     pod/calico-kube-controllers-59556d9b4c-bp6jk            1/1     Running     49 (61m ago)   24h
-kube-system     pod/calico-node-vfjn4                                   1/1     Running     32 (82m ago)   24h
-kube-system     pod/calico-node-zqj5t                                   1/1     Running     26 (83m ago)   24h
-kube-system     pod/coredns-66bc5c9577-d7hpd                            1/1     Running     3 (61m ago)    24h
-kube-system     pod/csi-hostpath-attacher-0                             1/1     Running     1 (61m ago)    14h
-kube-system     pod/csi-hostpath-resizer-0                              1/1     Running     1 (82m ago)    14h
-kube-system     pod/csi-hostpathplugin-88ck2                            6/6     Running     32 (61m ago)   14h
-kube-system     pod/csi-hostpathplugin-xnm8j                            6/6     Running     42 (56m ago)   14h
-kube-system     pod/etcd-minikube                                       1/1     Running     4 (61m ago)    24h
-kube-system     pod/kube-apiserver-minikube                             1/1     Running     28 (61m ago)   24h
-kube-system     pod/kube-controller-manager-minikube                    1/1     Running     9 (60m ago)    24h
-kube-system     pod/kube-proxy-rf7hq                                    1/1     Running     1 (61m ago)    24h
-kube-system     pod/kube-proxy-vfnr7                                    1/1     Running     1 (82m ago)    24h
-kube-system     pod/kube-scheduler-minikube                             1/1     Running     4 (61m ago)    24h
-kube-system     pod/metrics-server-85b7d694d7-69hdr                     1/1     Running     59 (82m ago)   23h
-kube-system     pod/sealed-secrets-controller-744f5c6bbb-2vnsm          1/1     Running     45 (61m ago)   21h
-kube-system     pod/storage-provisioner                                 1/1     Running     58 (59m ago)   24h
-monitoring      pod/prometheus-8f5b4f78-45kv9                           1/1     Running     1 (82m ago)    19h
+### The exact command named in the brief (Take-home assignment)
+$ kubectl get pods,svc,ingress,netpol -A
+
+NAMESPACE       NAME                                                    READY   STATUS      RESTARTS         AGE
+app             pod/api-c4c68dd74-54c8v                                 1/1     Running     0                44m
+app             pod/api-c4c68dd74-w7kgc                                 1/1     Running     0                43m
+app             pod/postgres-0                                          1/1     Running     0                6m15s
+argocd          pod/argocd-application-controller-0                     1/1     Running     3 (7h31m ago)    29h
+argocd          pod/argocd-applicationset-controller-748685565c-7trkb   1/1     Running     1 (7h31m ago)    29h
+argocd          pod/argocd-dex-server-7ffb4b5c88-k7fn6                  1/1     Running     1 (7h31m ago)    29h
+argocd          pod/argocd-notifications-controller-7757fdd8c6-hf5r8    1/1     Running     3 (7h31m ago)    29h
+argocd          pod/argocd-redis-556cbb7bc9-bc9dx                       1/1     Running     1 (7h31m ago)    29h
+argocd          pod/argocd-repo-server-6c8f5f9bd4-4zlsc                 1/1     Running     7 (7h31m ago)    29h
+argocd          pod/argocd-server-86c48f6bf-k7zwl                       1/1     Running     28 (7h31m ago)   29h
+ingress-nginx   pod/ingress-nginx-admission-create-94sl9                0/1     Completed   0                29h
+ingress-nginx   pod/ingress-nginx-admission-patch-twhvs                 0/1     Completed   0                29h
+ingress-nginx   pod/ingress-nginx-controller-9cc49f96f-kk66k            1/1     Running     52 (7h10m ago)   29h
+kube-system     pod/calico-kube-controllers-59556d9b4c-bp6jk            1/1     Running     49 (7h10m ago)   30h
+kube-system     pod/calico-node-vfjn4                                   1/1     Running     32 (7h31m ago)   30h
+kube-system     pod/calico-node-zqj5t                                   1/1     Running     26 (7h32m ago)   30h
+kube-system     pod/coredns-66bc5c9577-d7hpd                            1/1     Running     3 (7h10m ago)    30h
+kube-system     pod/csi-hostpath-attacher-0                             1/1     Running     1 (7h10m ago)    20h
+kube-system     pod/csi-hostpath-resizer-0                              1/1     Running     1 (7h31m ago)    20h
+kube-system     pod/csi-hostpathplugin-88ck2                            6/6     Running     34 (5h41m ago)   20h
+kube-system     pod/csi-hostpathplugin-xnm8j                            6/6     Running     43 (5h41m ago)   20h
+kube-system     pod/etcd-minikube                                       1/1     Running     4 (7h10m ago)    30h
+kube-system     pod/kube-apiserver-minikube                             1/1     Running     28 (7h10m ago)   30h
+kube-system     pod/kube-controller-manager-minikube                    1/1     Running     9 (7h9m ago)     30h
+kube-system     pod/kube-proxy-rf7hq                                    1/1     Running     1 (7h10m ago)    30h
+kube-system     pod/kube-proxy-vfnr7                                    1/1     Running     1 (7h31m ago)    30h
+kube-system     pod/kube-scheduler-minikube                             1/1     Running     4 (7h10m ago)    30h
+kube-system     pod/metrics-server-85b7d694d7-69hdr                     1/1     Running     59 (7h31m ago)   29h
+kube-system     pod/sealed-secrets-controller-744f5c6bbb-2vnsm          1/1     Running     45 (7h10m ago)   27h
+kube-system     pod/storage-provisioner                                 1/1     Running     60               30h
+monitoring      pod/prometheus-8f5b4f78-45kv9                           1/1     Running     1 (7h31m ago)    25h
 
 NAMESPACE       NAME                                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
-app             service/api                                       ClusterIP   10.96.14.141     <none>        80/TCP                       23h
-app             service/postgres                                  ClusterIP   None             <none>        5432/TCP                     23h
-argocd          service/argocd-applicationset-controller          ClusterIP   10.109.33.203    <none>        7000/TCP,8080/TCP            23h
-argocd          service/argocd-dex-server                         ClusterIP   10.107.203.201   <none>        5556/TCP,5557/TCP,5558/TCP   23h
-argocd          service/argocd-metrics                            ClusterIP   10.102.224.2     <none>        8082/TCP                     23h
-argocd          service/argocd-notifications-controller-metrics   ClusterIP   10.105.177.132   <none>        9001/TCP                     23h
-argocd          service/argocd-redis                              ClusterIP   10.99.8.59       <none>        6379/TCP                     23h
-argocd          service/argocd-repo-server                        ClusterIP   10.107.212.129   <none>        8081/TCP,8084/TCP            23h
-argocd          service/argocd-server                             ClusterIP   10.109.65.189    <none>        80/TCP,443/TCP               23h
-argocd          service/argocd-server-metrics                     ClusterIP   10.105.67.4      <none>        8083/TCP                     23h
-cnpg-system     service/cnpg-webhook-service                      ClusterIP   10.103.93.193    <none>        443/TCP                      16h
-default         service/kubernetes                                ClusterIP   10.96.0.1        <none>        443/TCP                      24h
-ingress-nginx   service/ingress-nginx-controller                  NodePort    10.111.95.136    <none>        80:30684/TCP,443:32028/TCP   23h
-ingress-nginx   service/ingress-nginx-controller-admission        ClusterIP   10.107.41.13     <none>        443/TCP                      23h
-kube-system     service/csi-hostpath-attacher                     ClusterIP   10.96.221.182    <none>        12345/TCP                    14h
-kube-system     service/csi-hostpath-resizer                      ClusterIP   10.110.192.61    <none>        12345/TCP                    14h
-kube-system     service/kube-dns                                  ClusterIP   10.96.0.10       <none>        53/UDP,53/TCP,9153/TCP       24h
-kube-system     service/metrics-server                            ClusterIP   10.96.80.149     <none>        443/TCP                      23h
-kube-system     service/sealed-secrets-controller                 ClusterIP   10.98.20.189     <none>        8080/TCP                     21h
-kube-system     service/sealed-secrets-controller-metrics         ClusterIP   10.96.218.236    <none>        8081/TCP                     21h
-monitoring      service/prometheus                                ClusterIP   10.110.199.194   <none>        9090/TCP                     19h
+app             service/api                                       ClusterIP   10.96.14.141     <none>        80/TCP                       29h
+app             service/postgres                                  ClusterIP   None             <none>        5432/TCP                     29h
+argocd          service/argocd-applicationset-controller          ClusterIP   10.109.33.203    <none>        7000/TCP,8080/TCP            29h
+argocd          service/argocd-dex-server                         ClusterIP   10.107.203.201   <none>        5556/TCP,5557/TCP,5558/TCP   29h
+argocd          service/argocd-metrics                            ClusterIP   10.102.224.2     <none>        8082/TCP                     29h
+argocd          service/argocd-notifications-controller-metrics   ClusterIP   10.105.177.132   <none>        9001/TCP                     29h
+argocd          service/argocd-redis                              ClusterIP   10.99.8.59       <none>        6379/TCP                     29h
+argocd          service/argocd-repo-server                        ClusterIP   10.107.212.129   <none>        8081/TCP,8084/TCP            29h
+argocd          service/argocd-server                             ClusterIP   10.109.65.189    <none>        80/TCP,443/TCP               29h
+argocd          service/argocd-server-metrics                     ClusterIP   10.105.67.4      <none>        8083/TCP                     29h
+default         service/kubernetes                                ClusterIP   10.96.0.1        <none>        443/TCP                      30h
+ingress-nginx   service/ingress-nginx-controller                  NodePort    10.111.95.136    <none>        80:30684/TCP,443:32028/TCP   29h
+ingress-nginx   service/ingress-nginx-controller-admission        ClusterIP   10.107.41.13     <none>        443/TCP                      29h
+kube-system     service/csi-hostpath-attacher                     ClusterIP   10.96.221.182    <none>        12345/TCP                    20h
+kube-system     service/csi-hostpath-resizer                      ClusterIP   10.110.192.61    <none>        12345/TCP                    20h
+kube-system     service/kube-dns                                  ClusterIP   10.96.0.10       <none>        53/UDP,53/TCP,9153/TCP       30h
+kube-system     service/metrics-server                            ClusterIP   10.96.80.149     <none>        443/TCP                      29h
+kube-system     service/sealed-secrets-controller                 ClusterIP   10.98.20.189     <none>        8080/TCP                     27h
+kube-system     service/sealed-secrets-controller-metrics         ClusterIP   10.96.218.236    <none>        8081/TCP                     27h
+monitoring      service/prometheus                                ClusterIP   10.110.199.194   <none>        9090/TCP                     25h
 
 NAMESPACE   NAME                            CLASS   HOSTS         ADDRESS        PORTS   AGE
-app         ingress.networking.k8s.io/api   nginx   qoves.local   192.168.49.2   80      23h
+app         ingress.networking.k8s.io/api   nginx   qoves.local   192.168.49.2   80      29h
 
 NAMESPACE   NAME                                                                              POD-SELECTOR                                              AGE
-app         networkpolicy.networking.k8s.io/allow-dns-egress                                  <none>                                                    19h
-app         networkpolicy.networking.k8s.io/api-egress-to-postgres                            app.kubernetes.io/name=api                                19h
-app         networkpolicy.networking.k8s.io/api-ingress                                       app.kubernetes.io/name=api                                19h
-app         networkpolicy.networking.k8s.io/default-deny-all                                  <none>                                                    19h
-app         networkpolicy.networking.k8s.io/postgres-ingress-from-api                         app.kubernetes.io/name=postgres                           19h
-argocd      networkpolicy.networking.k8s.io/argocd-application-controller-network-policy      app.kubernetes.io/name=argocd-application-controller      23h
-argocd      networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy   app.kubernetes.io/name=argocd-applicationset-controller   23h
-argocd      networkpolicy.networking.k8s.io/argocd-dex-server-network-policy                  app.kubernetes.io/name=argocd-dex-server                  23h
-argocd      networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy    app.kubernetes.io/name=argocd-notifications-controller    23h
-argocd      networkpolicy.networking.k8s.io/argocd-redis-network-policy                       app.kubernetes.io/name=argocd-redis                       23h
-argocd      networkpolicy.networking.k8s.io/argocd-repo-server-network-policy                 app.kubernetes.io/name=argocd-repo-server                 23h
-argocd      networkpolicy.networking.k8s.io/argocd-server-network-policy                      app.kubernetes.io/name=argocd-server                      23h
+app         networkpolicy.networking.k8s.io/allow-dns-egress                                  <none>                                                    25h
+app         networkpolicy.networking.k8s.io/api-egress-to-postgres                            app.kubernetes.io/name=api                                25h
+app         networkpolicy.networking.k8s.io/api-ingress                                       app.kubernetes.io/name=api                                25h
+app         networkpolicy.networking.k8s.io/default-deny-all                                  <none>                                                    25h
+app         networkpolicy.networking.k8s.io/postgres-ingress-from-api                         app.kubernetes.io/name=postgres                           25h
+argocd      networkpolicy.networking.k8s.io/argocd-application-controller-network-policy      app.kubernetes.io/name=argocd-application-controller      29h
+argocd      networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy   app.kubernetes.io/name=argocd-applicationset-controller   29h
+argocd      networkpolicy.networking.k8s.io/argocd-dex-server-network-policy                  app.kubernetes.io/name=argocd-dex-server                  29h
+argocd      networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy    app.kubernetes.io/name=argocd-notifications-controller    29h
+argocd      networkpolicy.networking.k8s.io/argocd-redis-network-policy                       app.kubernetes.io/name=argocd-redis                       29h
+argocd      networkpolicy.networking.k8s.io/argocd-repo-server-network-policy                 app.kubernetes.io/name=argocd-repo-server                 29h
+argocd      networkpolicy.networking.k8s.io/argocd-server-network-policy                      app.kubernetes.io/name=argocd-server                      29h

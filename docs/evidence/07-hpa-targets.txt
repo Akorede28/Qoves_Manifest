@@ -1,0 +1,36 @@
+### HPA: CPU at 70% of requests, min 2 / max 5
+NAME   REFERENCE        TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+api    Deployment/api   cpu: 2%/70%   2         5         2          25h
+
+Name:                                                  api
+Namespace:                                             app
+Labels:                                                app.kubernetes.io/instance=api
+Annotations:                                           <none>
+CreationTimestamp:                                     Wed, 29 Jul 2026 20:08:40 +0100
+Reference:                                             Deployment/api
+Metrics:                                               ( current / target )
+  resource cpu on pods  (as a percentage of request):  2% (2m) / 70%
+Min replicas:                                          2
+Max replicas:                                          5
+Deployment pods:                                       2 current / 2 desired
+Conditions:
+  Type            Status  Reason            Message
+  ----            ------  ------            -------
+  AbleToScale     True    ReadyForNewScale  recommended size matches current size
+  ScalingActive   True    ValidMetricFound  the HPA was able to successfully calculate a replica count from cpu resource utilization (percentage of request)
+  ScalingLimited  True    TooFewReplicas    the desired replica count is less than the minimum replica count
+Events:
+  Type     Reason                        Age                From                       Message
+  ----     ------                        ----               ----                       -------
+  Warning  FailedGetResourceMetric       37m (x7 over 38m)  horizontal-pod-autoscaler  failed to get cpu utilization: did not receive metrics for targeted pods (pods might be unready)
+  Warning  FailedComputeMetricsReplicas  37m (x7 over 38m)  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: did not receive metrics for targeted pods (pods might be unready)
+
+### The requests the percentage is computed against (cpu 100m after the probe fix)
+{"limits":{"cpu":"700m","memory":"128Mi"},"requests":{"cpu":"100m","memory":"64Mi"}}
+
+### Live usage from metrics-server; note how little CPU an I/O-bound API uses (ADR-4)
+NAME                  CPU(cores)   MEMORY(bytes)   
+api-c4c68dd74-54c8v   2m           8Mi             
+api-c4c68dd74-w7kgc   2m           9Mi             
+netpol-test           0m           4Mi             
+postgres-0            8m           20Mi            
