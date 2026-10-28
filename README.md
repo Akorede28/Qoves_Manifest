@@ -1,6 +1,6 @@
 # Qoves_Manifest
 
-GitOps platform for the QOVES take-home: (minikube, 2 nodes, Calico), ArgoCD app-of-apps,
+GitOps platform for the QOVES: (minikube, 2 nodes, Calico), ArgoCD app-of-apps,
 PostgreSQL + PVC, default-deny NetworkPolicies, Sealed Secrets, HPA, Prometheus.
 
 - **[docs/WRITEUP.md](docs/WRITEUP.md)** the five required sections plus seven ADRs
